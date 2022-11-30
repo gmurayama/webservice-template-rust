@@ -1,0 +1,2 @@
+# Webservice Template (in Rust)
+

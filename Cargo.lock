@@ -3,5 +3,16 @@
 version = 3
 
 [[package]]
-name = "webservice-rust-template"
+name = "api"
+version = "0.1.0"
+dependencies = [
+ "infrastructure",
+]
+
+[[package]]
+name = "application"
+version = "0.1.0"
+
+[[package]]
+name = "infrastructure"
 version = "0.1.0"
