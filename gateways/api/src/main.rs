@@ -7,18 +7,23 @@ use std::net::TcpListener;
 mod server;
 use server::setup_server;
 
+mod settings;
+use settings::get_config;
+
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    let settings = get_config()?;
+
     telemetry::setup(Settings {
         log: LoggingSettings {
             format: telemetry::LoggingOptions::PrettyPrint,
         },
         jaeger: JaegerSettings {
-            host: "127.0.0.1".to_string(),
-            port: 6831,
-            sampling_percentage: 1.0,
+            host: settings.jaeger.host,
+            port: settings.jaeger.port,
+            sampler_param: settings.jaeger.sampler_param,
         },
-        service_name: "api".to_string(),
+        service_name: settings.app.service_name,
     });
 
     let listener = TcpListener::bind("127.0.0.1:7000")?;

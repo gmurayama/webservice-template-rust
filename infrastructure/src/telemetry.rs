@@ -22,7 +22,7 @@ pub enum LoggingOptions {
 pub struct JaegerSettings {
     pub host: String,
     pub port: u32,
-    pub sampling_percentage: f64,
+    pub sampler_param: f64,
 }
 
 pub struct LoggingSettings {
@@ -54,9 +54,9 @@ pub fn setup(settings: Settings) {
     let tracer = opentelemetry_jaeger::new_agent_pipeline()
         .with_service_name(settings.service_name.clone())
         .with_endpoint(format!("{}:{}", settings.jaeger.host, settings.jaeger.port))
-        .with_trace_config(trace::config().with_sampler(Sampler::TraceIdRatioBased(
-            settings.jaeger.sampling_percentage,
-        )))
+        .with_trace_config(
+            trace::config().with_sampler(Sampler::TraceIdRatioBased(settings.jaeger.sampler_param)),
+        )
         .install_batch(opentelemetry::runtime::Tokio)
         .unwrap();
 
