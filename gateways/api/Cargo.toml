@@ -8,3 +8,8 @@ edition = "2021"
 [dependencies]
 infrastructure = { path = "../../infrastructure" }
 application = { path = "../../application" }
+
+actix-web = "4"
+
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+eyre = { workspace = true }
