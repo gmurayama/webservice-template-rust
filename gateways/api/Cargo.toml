@@ -19,3 +19,6 @@ serde-aux = "3"
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 eyre = { workspace = true }
 tracing = { workspace = true, features = ["log"] }
+
+[dev-dependencies]
+reqwest = "0.11"
