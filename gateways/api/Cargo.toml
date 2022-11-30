@@ -13,3 +13,4 @@ actix-web = "4"
 
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 eyre = { workspace = true }
+tracing = { workspace = true, features = ["log"] }

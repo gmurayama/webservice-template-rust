@@ -1,6 +1,7 @@
 use actix_web::{dev::Server, get, App, HttpResponse, HttpServer, Responder};
 use std::net::TcpListener;
 
+#[tracing::instrument]
 #[get("/")]
 async fn hello() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
