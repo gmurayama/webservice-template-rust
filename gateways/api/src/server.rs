@@ -1,5 +1,6 @@
 use actix_web::{dev::Server, get, App, HttpResponse, HttpServer, Responder};
 use std::net::TcpListener;
+use tracing_actix_web::TracingLogger;
 
 #[tracing::instrument]
 #[get("/")]
@@ -8,7 +9,7 @@ async fn hello() -> impl Responder {
 }
 
 pub async fn setup_server(listener: TcpListener) -> eyre::Result<Server> {
-    let server = HttpServer::new(|| App::new().service(hello))
+    let server = HttpServer::new(|| App::new().wrap(TracingLogger::default()).service(hello))
         .listen(listener)?
         .run();
 
