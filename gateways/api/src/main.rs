@@ -4,7 +4,7 @@ use api::{
 };
 use infrastructure::{
     self,
-    telemetry::{self, JaegerSettings, LoggingSettings, Settings},
+    telemetry::{self, JaegerSettings, LoggingSettings},
 };
 use prometheus_client::registry::Registry;
 use std::net::TcpListener;
@@ -16,7 +16,7 @@ use settings::get_config;
 async fn main() -> eyre::Result<()> {
     let settings = get_config()?;
 
-    telemetry::setup(Settings {
+    telemetry::setup(telemetry::Settings {
         log: LoggingSettings {
             format: telemetry::LoggingOptions::PrettyPrint,
         },
@@ -31,7 +31,7 @@ async fn main() -> eyre::Result<()> {
     let mut registry = <Registry>::default();
     let api_metrics = ApiMetrics::new(&mut registry);
 
-    let listener = TcpListener::bind("127.0.0.1:7000")?;
+    let listener = TcpListener::bind(format!("{}:{}", settings.app.host, settings.app.port))?;
     let server = setup_server(server::Settings {
         listener,
         metrics: api_metrics,

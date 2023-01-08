@@ -32,8 +32,8 @@ pub fn get_config() -> eyre::Result<Settings> {
                 .separator("_"),
         )
         // App default settings
-        .set_default("app.host", "localhost")?
-        .set_default("app.port", 8080)?
+        .set_default("app.host", "127.0.0.1")?
+        .set_default("app.port", 7000)?
         .set_default("app.environment", Environment::Development.as_str())?
         .set_default("app.service_name", "messaging")?
         // Jaeger default settings
