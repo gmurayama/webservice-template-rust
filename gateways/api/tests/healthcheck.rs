@@ -1,23 +1,21 @@
-use std::net::TcpListener;
-
 use api::{metrics::ApiMetrics, server};
 use prometheus_client::registry::Registry;
 
 #[tokio::test]
 async fn healthcheck_works() {
-    let listener = TcpListener::bind("127.0.0.1:0").expect("failed to bind to address");
-    let port = listener.local_addr().unwrap().port();
-
-    let mut registry = <Registry>::default();
+    let mut registry = Registry::default();
     let api_metrics = ApiMetrics::new(&mut registry);
 
-    let app = server::setup_server(server::Settings {
-        listener,
+    let app = server::Server::setup(server::Settings {
+        host: "127.0.0.1".to_string(),
+        port: 0,
         metrics: api_metrics,
         registry,
     })
     .expect("failed to setup the server");
-    tokio::spawn(app);
+    let port = app.port();
+
+    tokio::spawn(app.run());
     let client = reqwest::Client::new();
 
     // Act

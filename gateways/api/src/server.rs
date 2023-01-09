@@ -1,7 +1,8 @@
-use actix_web::{dev::Server, get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use prometheus_client::{encoding::text::encode, registry::Registry};
 use std::net::TcpListener;
 use std::sync::Mutex;
+use tracing::log;
 use tracing_actix_web::TracingLogger;
 
 use crate::{metrics::ApiMetrics, middlewares::metrics::Metrics};
@@ -28,32 +29,57 @@ pub struct AppState {
 
 pub struct Settings {
     pub metrics: ApiMetrics,
-    pub listener: TcpListener,
+    pub host: String,
+    pub port: u16,
     pub registry: Registry,
 }
 
-pub fn setup_server(settings: Settings) -> eyre::Result<Server> {
-    let state = AppState {
-        registry: settings.registry,
-    };
+pub struct Server {
+    port: u16,
+    server: actix_web::dev::Server,
+}
 
-    let state = web::Data::new(Mutex::new(state));
+impl Server {
+    pub fn setup(settings: Settings) -> eyre::Result<Server> {
+        let listener = TcpListener::bind(format!("{}:{}", settings.host, settings.port))?;
+        let port = listener.local_addr().unwrap().port();
 
-    let server = HttpServer::new(move || {
-        let metrics = settings.metrics.clone();
+        let state = AppState {
+            registry: settings.registry,
+        };
 
-        App::new()
-            .app_data(state.clone())
-            .wrap(Metrics::new(
-                metrics.request_duration,
-                metrics.request_count,
-            ))
-            .wrap(TracingLogger::default())
-            .service(healthcheck)
-            .service(metrics_handler)
-    })
-    .listen(settings.listener)?
-    .run();
+        let state = web::Data::new(Mutex::new(state));
 
-    Ok(server)
+        let server = HttpServer::new(move || {
+            let metrics = settings.metrics.clone();
+
+            App::new()
+                .app_data(state.clone())
+                .wrap(Metrics::new(
+                    metrics.request_duration,
+                    metrics.request_count,
+                ))
+                .wrap(TracingLogger::default())
+                .service(healthcheck)
+                .service(metrics_handler)
+        })
+        .listen(listener)
+        .and_then(|s| {
+            log::info!("Started listening on {}:{}", settings.host, settings.port);
+            Ok(s)
+        })?
+        .run();
+
+        let server = Server { port, server };
+
+        Ok(server)
+    }
+
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+
+    pub async fn run(self) -> Result<(), std::io::Error> {
+        self.server.await
+    }
 }

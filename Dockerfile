@@ -20,5 +20,4 @@ RUN apt-get update -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/target/release/api api
-ENV APP_ENVIRONMENT production
 ENTRYPOINT ["./api"]
