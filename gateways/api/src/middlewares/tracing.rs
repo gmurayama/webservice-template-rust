@@ -8,7 +8,7 @@ pub struct LevelRootSpanBuilder;
 impl RootSpanBuilder for LevelRootSpanBuilder {
     fn on_request_start(request: &ServiceRequest) -> Span {
         let level = match request.path() {
-            "/health_check" | "/metrics" => Level::DEBUG,
+            "/healthcheck" | "/metrics" => Level::DEBUG,
             _ => Level::INFO,
         };
         tracing_actix_web::root_span!(level = level, request)
