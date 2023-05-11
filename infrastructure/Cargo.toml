@@ -17,4 +17,3 @@ tracing = { workspace = true, features = ["log"] }
 log = { workspace = true }
 tokio = { workspace = true, features = ["sync"] }
 eyre = { workspace = true }
-prometheus-client = { workspace = true }

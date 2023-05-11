@@ -923,7 +923,6 @@ dependencies = [
  "log",
  "opentelemetry",
  "opentelemetry-jaeger",
- "prometheus-client",
  "tokio",
  "tracing",
  "tracing-bunyan-formatter",

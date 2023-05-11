@@ -3,9 +3,11 @@ use prometheus_client::{encoding::text::encode, registry::Registry};
 use std::net::TcpListener;
 use std::sync::Mutex;
 use tracing::log;
-use tracing_actix_web::TracingLogger;
 
-use crate::{metrics::ApiMetrics, middlewares::metrics::Metrics};
+use crate::{
+    metrics::ApiMetrics,
+    middlewares::{metrics::Metrics, tracing::Tracing},
+};
 
 #[tracing::instrument]
 #[get("/healthcheck")]
@@ -59,7 +61,7 @@ impl Server {
                     metrics.request_duration,
                     metrics.request_count,
                 ))
-                .wrap(TracingLogger::default())
+                .wrap(Tracing::new())
                 .service(healthcheck)
                 .service(metrics_handler)
         })
