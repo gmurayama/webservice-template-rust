@@ -9,18 +9,47 @@ use actix_web::{
     Error,
 };
 use futures_util::future::LocalBoxFuture;
-use prometheus_client::metrics::{counter::Counter, family::Family, histogram::Histogram};
+use prometheus_client::{
+    encoding::EncodeLabelSet,
+    metrics::{counter::Counter, family::Family, histogram::Histogram},
+    registry::Registry,
+};
 
+#[derive(Clone, Debug, Hash, PartialEq, Eq, EncodeLabelSet)]
+pub struct RequestLabel {
+    pub method: String,
+    pub path: String,
+}
+
+#[derive(Clone)]
 pub struct Metrics {
-    request_duration: Family<Vec<(String, String)>, Histogram>,
-    request_count: Family<Vec<(String, String)>, Counter>,
+    request_duration: Family<RequestLabel, Histogram>,
+    request_count: Family<RequestLabel, Counter>,
 }
 
 impl Metrics {
-    pub fn new(
-        request_duration: Family<Vec<(String, String)>, Histogram>,
-        request_count: Family<Vec<(String, String)>, Counter>,
-    ) -> Self {
+    pub fn new(registry: &mut Registry) -> Self {
+        let request_count = Family::<RequestLabel, Counter>::default();
+        let request_duration = Family::<RequestLabel, Histogram>::new_with_constructor(|| {
+            let buckets = [
+                1.0, 2.5, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, 1250.0,
+                1500.0, 2000.0,
+            ];
+            Histogram::new(buckets.into_iter())
+        });
+
+        registry.register(
+            "request_count",
+            "Number of requests received",
+            request_count.clone(),
+        );
+
+        registry.register(
+            "request_duration_ms",
+            "Request duration",
+            request_duration.clone(),
+        );
+
         Metrics {
             request_duration,
             request_count,
@@ -51,8 +80,8 @@ where
 
 pub struct MetricsMiddleware<S> {
     service: S,
-    request_duration: Arc<Family<Vec<(String, String)>, Histogram>>,
-    request_count: Arc<Family<Vec<(String, String)>, Counter>>,
+    request_duration: Arc<Family<RequestLabel, Histogram>>,
+    request_count: Arc<Family<RequestLabel, Counter>>,
 }
 
 impl<S, B> Service<ServiceRequest> for MetricsMiddleware<S>
@@ -72,10 +101,14 @@ where
         let path = req.path().to_string();
         let method = req.method().to_string();
 
+        let fut = self.service.call(req);
+
+        if path == "/metrics" {
+            return Box::pin(fut);
+        }
+
         let request_duration = self.request_duration.clone();
         let request_count = self.request_count.clone();
-
-        let fut = self.service.call(req);
 
         Box::pin(async move {
             let res = fut.await?;
@@ -83,10 +116,15 @@ where
             let elapsed = now.elapsed().as_millis() as f64;
 
             request_duration
-                .get_or_create(&vec![(method.clone(), path.clone())])
+                .get_or_create(&RequestLabel {
+                    method: method.clone(),
+                    path: path.clone(),
+                })
                 .observe(elapsed);
 
-            request_count.get_or_create(&vec![(method, path)]).inc();
+            request_count
+                .get_or_create(&RequestLabel { method, path })
+                .inc();
 
             Ok(res)
         })

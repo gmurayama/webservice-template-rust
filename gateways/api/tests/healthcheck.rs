@@ -1,15 +1,13 @@
-use api::{metrics::ApiMetrics, server};
+use api::server;
 use prometheus_client::registry::Registry;
 
 #[tokio::test]
 async fn healthcheck_works() {
-    let mut registry = Registry::default();
-    let api_metrics = ApiMetrics::new(&mut registry);
+    let registry = Registry::default();
 
     let app = server::Server::setup(server::Settings {
         host: "127.0.0.1".to_string(),
         port: 0,
-        metrics: api_metrics,
         registry,
     })
     .expect("failed to setup the server");

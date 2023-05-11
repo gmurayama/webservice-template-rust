@@ -1,4 +1,4 @@
-use api::{metrics::ApiMetrics, server};
+use api::server;
 use infrastructure::{
     self,
     telemetry::{self, JaegerSettings, LoggingSettings},
@@ -24,13 +24,11 @@ async fn main() -> eyre::Result<()> {
         service_name: settings.app.service_name,
     });
 
-    let mut registry = Registry::default();
-    let api_metrics = ApiMetrics::new(&mut registry);
+    let registry = Registry::default();
 
     let server = server::Server::setup(server::Settings {
         host: settings.app.host,
         port: settings.app.port,
-        metrics: api_metrics,
         registry,
     })?;
 

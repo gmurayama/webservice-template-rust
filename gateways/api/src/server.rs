@@ -4,10 +4,7 @@ use std::net::TcpListener;
 use std::sync::Mutex;
 use tracing::log;
 
-use crate::{
-    metrics::ApiMetrics,
-    middlewares::{metrics::Metrics, tracing::Tracing},
-};
+use crate::middlewares::{metrics::Metrics, tracing::Tracing};
 
 #[tracing::instrument]
 #[get("/healthcheck")]
@@ -30,7 +27,6 @@ pub struct AppState {
 }
 
 pub struct Settings {
-    pub metrics: ApiMetrics,
     pub host: String,
     pub port: u16,
     pub registry: Registry,
@@ -46,22 +42,17 @@ impl Server {
         let listener = TcpListener::bind(format!("{}:{}", settings.host, settings.port))?;
         let port = listener.local_addr().unwrap().port();
 
-        let state = AppState {
-            registry: settings.registry,
-        };
+        let mut registry = settings.registry;
+        let api_metrics = Metrics::new(&mut registry);
 
+        let state = AppState { registry };
         let state = web::Data::new(Mutex::new(state));
 
         let server = HttpServer::new(move || {
-            let metrics = settings.metrics.clone();
-
             App::new()
                 .app_data(state.clone())
-                .wrap(Metrics::new(
-                    metrics.request_duration,
-                    metrics.request_count,
-                ))
                 .wrap(Tracing::new())
+                .wrap(api_metrics.clone())
                 .service(healthcheck)
                 .service(metrics_handler)
         })
