@@ -35,7 +35,7 @@ pub fn get_config() -> eyre::Result<Settings> {
         .set_default("app.host", "127.0.0.1")?
         .set_default("app.port", 7000)?
         .set_default("app.environment", Environment::Development.as_str())?
-        .set_default("app.service_name", "messaging")?
+        .set_default("app.service_name", "webservice-template")?
         // Jaeger default settings
         .set_default("jaeger.host", "127.0.0.1")?
         .set_default("jaeger.port", 6831)?
@@ -52,6 +52,8 @@ pub fn get_config() -> eyre::Result<Settings> {
 pub enum Environment {
     #[serde(rename = "development")]
     Development,
+    #[serde(rename = "staging")]
+    Staging,
     #[serde(rename = "production")]
     Production,
 }
@@ -60,6 +62,7 @@ impl Environment {
     pub fn as_str(&self) -> &'static str {
         match self {
             Environment::Development => "development",
+            Environment::Staging => "staging",
             Environment::Production => "production",
         }
     }
@@ -71,6 +74,7 @@ impl TryFrom<String> for Environment {
     fn try_from(s: String) -> Result<Self, Self::Error> {
         match s.to_lowercase().as_str() {
             "development" => Ok(Self::Development),
+            "staging" => Ok(Self::Staging),
             "production" => Ok(Self::Production),
             other => Err(format!(
                 "{} is not a supported environment. Use either `local` or `production`.",
