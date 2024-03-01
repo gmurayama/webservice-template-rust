@@ -1,4 +1,4 @@
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use prometheus_client::{encoding::text::encode, registry::Registry};
 use std::net::TcpListener;
 use std::sync::Mutex;
@@ -7,12 +7,10 @@ use tracing::log;
 use crate::middlewares::{metrics::Metrics, tracing::Tracing};
 
 #[tracing::instrument]
-#[get("/healthcheck")]
 async fn healthcheck() -> impl Responder {
-    HttpResponse::Ok()
+    HttpResponse::Ok().finish()
 }
 
-#[get("/metrics")]
 async fn metrics_handler(state: web::Data<Mutex<AppState>>) -> impl Responder {
     let state = state.lock().unwrap();
     let mut body = String::new();
@@ -53,13 +51,13 @@ impl Server {
                 .app_data(state.clone())
                 .wrap(Tracing::new())
                 .wrap(api_metrics.clone())
-                .service(healthcheck)
-                .service(metrics_handler)
+                .route("/healthcheck", web::get().to(healthcheck))
+                .route("/metrics", web::get().to(metrics_handler))
         })
         .listen(listener)
-        .and_then(|s| {
+        .map(|s| {
             log::info!("Started listening on {}:{}", settings.host, settings.port);
-            Ok(s)
+            s
         })?
         .run();
 
