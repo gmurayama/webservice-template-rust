@@ -14,7 +14,10 @@ impl RootSpanBuilder for LevelRootSpanBuilder {
         tracing_actix_web::root_span!(level = level, request)
     }
 
-    fn on_request_end<B>(span: Span, outcome: &Result<ServiceResponse<B>, Error>) {
+    fn on_request_end<B: actix_web::body::MessageBody>(
+        span: Span,
+        outcome: &Result<ServiceResponse<B>, Error>,
+    ) {
         DefaultRootSpanBuilder::on_request_end(span, outcome);
     }
 }
@@ -22,7 +25,7 @@ impl RootSpanBuilder for LevelRootSpanBuilder {
 pub struct Tracing;
 
 impl Tracing {
-    pub fn new() -> TracingLogger<LevelRootSpanBuilder> {
+    pub fn middleware() -> TracingLogger<LevelRootSpanBuilder> {
         TracingLogger::<LevelRootSpanBuilder>::new()
     }
 }

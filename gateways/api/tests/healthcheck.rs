@@ -6,9 +6,15 @@ async fn healthcheck_works() {
     let registry = Registry::default();
 
     let app = server::Server::setup(server::Settings {
-        host: "127.0.0.1".to_string(),
-        port: 0,
-        registry,
+        app: server::AppSettings {
+            host: "127.0.0.1".to_string(),
+            port: 0,
+        },
+        metrics: server::MetricSettings {
+            host: "127.0.0.1".to_string(),
+            port: 0,
+            registry,
+        },
     })
     .expect("failed to setup the server");
     let port = app.port();

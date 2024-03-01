@@ -19,8 +19,16 @@ pub struct Application {
 }
 
 #[derive(serde::Deserialize, Clone)]
+pub struct Metric {
+    pub host: String,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub port: u16,
+}
+
+#[derive(serde::Deserialize, Clone)]
 pub struct Settings {
     pub app: Application,
+    pub metric: Metric,
     pub jaeger: Jaeger,
 }
 
@@ -36,6 +44,9 @@ pub fn get_config() -> eyre::Result<Settings> {
         .set_default("app.port", 7000)?
         .set_default("app.environment", Environment::Development.as_str())?
         .set_default("app.service_name", "webservice-template")?
+        // Metric default settings
+        .set_default("metric.host", "127.0.0.1")?
+        .set_default("metric.port", 7001)?
         // Jaeger default settings
         .set_default("jaeger.host", "127.0.0.1")?
         .set_default("jaeger.port", 6831)?
