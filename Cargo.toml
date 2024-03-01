@@ -1,9 +1,5 @@
 [workspace]
-members = [
-    "gateways/api",
-    "infrastructure",
-    "application"
-]
+members = ["gateways/api", "infrastructure", "application"]
 default-members = ["gateways/api"]
 
 [workspace.package]
@@ -15,4 +11,5 @@ tracing = { version = "0.1" }
 log = "0.4"
 tokio = { version = "1.21" }
 eyre = { version = "0.6" }
-prometheus-client = { version = "0.19" }
+prometheus-client = { version = "0.22" }
+
