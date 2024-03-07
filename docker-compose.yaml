@@ -23,10 +23,13 @@ services:
       - 8000:3000
     
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/all-in-one:1.54
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
     ports:
       - "6833:6831/udp"
       - "6834:6832/udp"
+      - "4317:4317"
       - 16686:16686
 
 volumes:

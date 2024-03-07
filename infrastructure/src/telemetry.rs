@@ -1,9 +1,8 @@
 use std::time::Duration;
 
-use opentelemetry::{
-    global,
-    sdk::trace::{self, Sampler},
-};
+use opentelemetry::{global, KeyValue};
+use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_sdk::{propagation::TraceContextPropagator, trace::Sampler, Resource};
 use tokio::task;
 use tracing::subscriber::set_global_default;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
@@ -50,14 +49,27 @@ pub fn setup(settings: Settings) {
         .with_span_events(FmtSpan::NEW)
         .with_filter(filter_fn(move |_| emit_pretty_formating));
 
-    global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
-    let tracer = opentelemetry_jaeger::new_agent_pipeline()
-        .with_service_name(settings.service_name.clone())
-        .with_endpoint(format!("{}:{}", settings.jaeger.host, settings.jaeger.port))
-        .with_trace_config(
-            trace::config().with_sampler(Sampler::TraceIdRatioBased(settings.jaeger.sampler_param)),
+    global::set_text_map_propagator(TraceContextPropagator::new());
+    let tracer = opentelemetry_otlp::new_pipeline()
+        .tracing()
+        .with_exporter(
+            opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint(format!(
+                    "http://{}:{}",
+                    settings.jaeger.host, settings.jaeger.port
+                ))
+                .with_timeout(Duration::from_secs(2)),
         )
-        .install_batch(opentelemetry::runtime::Tokio)
+        .with_trace_config(
+            opentelemetry_sdk::trace::config()
+                .with_sampler(Sampler::TraceIdRatioBased(settings.jaeger.sampler_param))
+                .with_resource(Resource::new(vec![KeyValue::new(
+                    "service.name",
+                    settings.service_name.clone(),
+                )])),
+        )
+        .install_batch(opentelemetry_sdk::runtime::Tokio)
         .unwrap();
 
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);

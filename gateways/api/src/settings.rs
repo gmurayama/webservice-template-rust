@@ -49,7 +49,7 @@ pub fn get_config() -> eyre::Result<Settings> {
         .set_default("metric.port", 7001)?
         // Jaeger default settings
         .set_default("jaeger.host", "127.0.0.1")?
-        .set_default("jaeger.port", 6831)?
+        .set_default("jaeger.port", 4317)?
         .set_default("jaeger.sampler_param", 1.0)?
         .build()
         .wrap_err("error loading configuration from env variables")?;
