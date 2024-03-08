@@ -6,7 +6,6 @@ use tracing::log;
 
 use crate::middlewares::{metrics::Metrics, tracing::Tracing};
 
-#[tracing::instrument]
 async fn healthcheck() -> impl Responder {
     HttpResponse::Ok().finish()
 }
