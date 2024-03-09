@@ -4,7 +4,10 @@ use std::net::TcpListener;
 use std::sync::Mutex;
 use tracing::log;
 
-use crate::middlewares::{metrics::Metrics, tracing::Tracing};
+use crate::{
+    middlewares::{metrics::Metrics, tracing::Tracing},
+    routes::reply,
+};
 
 async fn healthcheck() -> impl Responder {
     HttpResponse::Ok().finish()
@@ -66,6 +69,7 @@ impl Server {
                 .wrap(Tracing::middleware())
                 .wrap(api_metrics.clone())
                 .route("/healthcheck", web::get().to(healthcheck))
+                .route("/reply", web::post().to(reply))
         })
         .listen(listener)
         .map(|s| {
