@@ -19,6 +19,7 @@ use prometheus_client::{
 pub struct RequestLabel {
     pub method: String,
     pub path: String,
+    pub status: u16,
 }
 
 #[derive(Clone)]
@@ -119,11 +120,16 @@ where
                 .get_or_create(&RequestLabel {
                     method: method.clone(),
                     path: path.clone(),
+                    status: res.status().as_u16(),
                 })
                 .observe(elapsed);
 
             request_count
-                .get_or_create(&RequestLabel { method, path })
+                .get_or_create(&RequestLabel {
+                    method,
+                    path,
+                    status: res.status().as_u16(),
+                })
                 .inc();
 
             Ok(res)
