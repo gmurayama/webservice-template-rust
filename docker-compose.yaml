@@ -9,9 +9,9 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
-    # network_mode: "host"
-    ports:
-      - 9090:9090
+    network_mode: "host"
+    extra_hosts: 
+      - host.docker.internal:host-gateway
 
   grafana:
     image: grafana/grafana:9.5.1
@@ -21,6 +21,8 @@ services:
       - grafana_data:/var/lib/grafana
     ports:
       - 8000:3000
+    extra_hosts: 
+      - host.docker.internal:host-gateway
     
   jaeger:
     image: jaegertracing/all-in-one:1.54
