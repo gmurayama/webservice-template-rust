@@ -11,19 +11,13 @@ impl RootSpanBuilder for LevelRootSpanBuilder {
             "/healthcheck" | "/metrics" => Level::DEBUG,
             _ => Level::INFO,
         };
-        tracing_actix_web::root_span!(level = level, request, error = tracing::field::Empty)
+        tracing_actix_web::root_span!(level = level, request)
     }
 
     fn on_request_end<B: actix_web::body::MessageBody>(
         span: Span,
         outcome: &Result<ServiceResponse<B>, Error>,
     ) {
-        if let Ok(response) = outcome {
-            if response.status().as_u16() >= 500 {
-                span.record("error", true);
-            }
-        }
-
         DefaultRootSpanBuilder::on_request_end(span, outcome);
     }
 }

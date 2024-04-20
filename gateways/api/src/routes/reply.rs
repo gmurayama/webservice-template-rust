@@ -1,7 +1,4 @@
-use actix_web::{
-    web::{self},
-    HttpResponse, Responder,
-};
+use actix_web::{error, web, HttpResponse};
 use application::messages::{self, ReplyError};
 use serde::Deserialize;
 use serde_json::json;
@@ -12,15 +9,15 @@ pub struct ReplyRequest {
 }
 
 #[tracing::instrument(name = "gateways.api.routes.reply")]
-pub async fn reply(request: web::Json<ReplyRequest>) -> impl Responder {
+pub async fn reply(request: web::Json<ReplyRequest>) -> actix_web::Result<HttpResponse> {
     match messages::reply(&request.message) {
-        Ok(message) => HttpResponse::Ok().json(json!({
+        Ok(message) => Ok(HttpResponse::Ok().json(json!({
             "message": message
-        })),
-        Err(err) => match err {
-            ReplyError::UnknownMessage(_) => HttpResponse::UnprocessableEntity().json(json!({
+        }))),
+        Err(err) => Err(match err {
+            ReplyError::UnknownMessage(_) => error::ErrorInternalServerError(json!({
                 "message": format!("{err}")
             })),
-        },
+        }),
     }
 }
