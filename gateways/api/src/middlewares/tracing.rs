@@ -11,6 +11,7 @@ impl RootSpanBuilder for LevelRootSpanBuilder {
             "/healthcheck" | "/metrics" => Level::DEBUG,
             _ => Level::INFO,
         };
+        println!("tracing middleware");
         tracing_actix_web::root_span!(level = level, request)
     }
 
@@ -18,6 +19,7 @@ impl RootSpanBuilder for LevelRootSpanBuilder {
         span: Span,
         outcome: &Result<ServiceResponse<B>, Error>,
     ) {
+        println!("at the end of span");
         DefaultRootSpanBuilder::on_request_end(span, outcome);
     }
 }

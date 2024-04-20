@@ -10,6 +10,7 @@ pub struct ReplyRequest {
 
 #[tracing::instrument(name = "gateways.api.routes.reply")]
 pub async fn reply(request: web::Json<ReplyRequest>) -> actix_web::Result<HttpResponse> {
+    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
     match messages::reply(&request.message) {
         Ok(message) => Ok(HttpResponse::Ok().json(json!({
             "message": message

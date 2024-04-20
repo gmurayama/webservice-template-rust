@@ -112,6 +112,7 @@ where
         let request_count = self.request_count.clone();
 
         Box::pin(async move {
+            println!("metrics middleware");
             let res = fut.await?;
 
             let elapsed = now.elapsed().as_millis() as f64;

@@ -1,9 +1,10 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use prometheus_client::{encoding::text::encode, registry::Registry};
-use std::net::TcpListener;
 use std::sync::Mutex;
+use std::{net::TcpListener, time::Duration};
 use tracing::log;
 
+use crate::middlewares::timeout::Timeout;
 use crate::{
     middlewares::{metrics::Metrics, tracing::Tracing},
     routes::reply,
@@ -59,7 +60,8 @@ impl Server {
         let port = listener.local_addr().unwrap().port();
 
         let mut registry = settings.metrics.registry;
-        let api_metrics = Metrics::new(&mut registry);
+        let metrics_middleware = Metrics::new(&mut registry);
+        let timeout_middleware = Timeout::new(Duration::from_secs(1));
 
         let state = AppState { registry };
         let state = web::Data::new(Mutex::new(state));
@@ -67,7 +69,7 @@ impl Server {
         let server = HttpServer::new(move || {
             App::new()
                 .wrap(Tracing::middleware())
-                .wrap(api_metrics.clone())
+                .wrap(metrics_middleware.clone())
                 .route("/healthcheck", web::get().to(healthcheck))
                 .route("/reply", web::post().to(reply))
         })
@@ -121,8 +123,7 @@ impl Server {
                 std::io::ErrorKind::Other,
                 format!("{}\n{}", e1, e2),
             )),
-            (Ok(_), Err(err)) => Err(err),
-            (Err(err), Ok(_)) => Err(err),
+            (Ok(_), Err(err)) | (Err(err), Ok(_)) => Err(err),
             _ => Ok(()),
         }
     }
