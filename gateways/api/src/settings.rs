@@ -2,7 +2,7 @@ use eyre::Context;
 use serde_aux::field_attributes::deserialize_number_from_string;
 
 #[derive(serde::Deserialize, Clone)]
-pub struct Jaeger {
+pub struct Telemetry {
     pub host: String,
     pub port: u32,
     #[serde(deserialize_with = "deserialize_number_from_string")]
@@ -29,7 +29,7 @@ pub struct Metric {
 pub struct Settings {
     pub app: Application,
     pub metric: Metric,
-    pub jaeger: Jaeger,
+    pub telemetry: Telemetry,
 }
 
 pub fn get_config() -> eyre::Result<Settings> {
@@ -47,10 +47,10 @@ pub fn get_config() -> eyre::Result<Settings> {
         // Metric default settings
         .set_default("metric.host", "127.0.0.1")?
         .set_default("metric.port", 7001)?
-        // Jaeger default settings
-        .set_default("jaeger.host", "127.0.0.1")?
-        .set_default("jaeger.port", 4317)?
-        .set_default("jaeger.sampler_param", 1.0)?
+        // Telemetry default settings
+        .set_default("telemetry.host", "127.0.0.1")?
+        .set_default("telemetry.port", 4317)?
+        .set_default("telemetry.sampler_param", 1.0)?
         .build()
         .wrap_err("error loading configuration from env variables")?;
 

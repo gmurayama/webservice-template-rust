@@ -13,10 +13,10 @@ async fn main() -> eyre::Result<()> {
         log: telemetry::LoggingSettings {
             format: telemetry::LoggingOptions::PrettyPrint,
         },
-        jaeger: telemetry::JaegerSettings {
-            host: settings.jaeger.host,
-            port: settings.jaeger.port,
-            sampler_param: settings.jaeger.sampler_param,
+        telemetry: telemetry::TelemetrySettings {
+            host: settings.telemetry.host,
+            port: settings.telemetry.port,
+            sampler_param: settings.telemetry.sampler_param,
         },
         service_name: settings.app.service_name,
     });

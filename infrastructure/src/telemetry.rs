@@ -18,7 +18,7 @@ pub enum LoggingOptions {
     JSON,
 }
 
-pub struct JaegerSettings {
+pub struct TelemetrySettings {
     pub host: String,
     pub port: u32,
     pub sampler_param: f64,
@@ -30,7 +30,7 @@ pub struct LoggingSettings {
 
 pub struct Settings {
     pub log: LoggingSettings,
-    pub jaeger: JaegerSettings,
+    pub telemetry: TelemetrySettings,
     pub service_name: String,
 }
 
@@ -57,13 +57,13 @@ pub fn setup(settings: Settings) {
                 .tonic()
                 .with_endpoint(format!(
                     "http://{}:{}",
-                    settings.jaeger.host, settings.jaeger.port
+                    settings.telemetry.host, settings.telemetry.port
                 ))
                 .with_timeout(Duration::from_secs(2)),
         )
         .with_trace_config(
             opentelemetry_sdk::trace::config()
-                .with_sampler(Sampler::TraceIdRatioBased(settings.jaeger.sampler_param))
+                .with_sampler(Sampler::TraceIdRatioBased(settings.telemetry.sampler_param))
                 .with_resource(Resource::new(vec![KeyValue::new(
                     "service.name",
                     settings.service_name.clone(),
