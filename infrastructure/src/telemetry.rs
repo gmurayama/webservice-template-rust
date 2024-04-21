@@ -89,7 +89,10 @@ pub async fn teardown() {
         global::shutdown_tracer_provider();
     });
 
-    if let Err(_) = tokio::time::timeout(Duration::from_secs(5), res).await {
+    if tokio::time::timeout(Duration::from_secs(5), res)
+        .await
+        .is_err()
+    {
         log::error!("could not shutdown tracer provider in 5 sec");
     }
 }

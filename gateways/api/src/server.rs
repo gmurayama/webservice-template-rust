@@ -1,4 +1,4 @@
-use actix_web::http::KeepAlive;
+
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use prometheus_client::{encoding::text::encode, registry::Registry};
 use std::sync::Mutex;
