@@ -1,10 +1,12 @@
-
+use actix_web::middleware::ErrorHandlers;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use prometheus_client::{encoding::text::encode, registry::Registry};
+use serde_json::json;
 use std::sync::Mutex;
 use std::{net::TcpListener, time::Duration};
 use tracing::log;
 
+use crate::middlewares::error_header::add_error_header;
 use crate::middlewares::timeout::Timeout;
 use crate::{
     middlewares::{metrics::Metrics, tracing::Tracing},
@@ -12,7 +14,7 @@ use crate::{
 };
 
 async fn healthcheck() -> impl Responder {
-    HttpResponse::Ok().finish()
+    HttpResponse::Ok().json(json!({}))
 }
 
 async fn metrics_handler(state: web::Data<Mutex<AppState>>) -> impl Responder {
@@ -58,7 +60,7 @@ impl Server {
             settings.metrics.host, settings.metrics.port
         ))?;
 
-        let port = listener.local_addr().unwrap().port();
+        let port = listener.local_addr()?.port();
 
         let mut registry = settings.metrics.registry;
         let metrics_middleware = Metrics::new(&mut registry);
@@ -71,8 +73,9 @@ impl Server {
             App::new()
                 .wrap(Tracing::middleware())
                 .wrap(metrics_middleware.clone())
+                .wrap(ErrorHandlers::new().default_handler(add_error_header))
                 .service(
-                    web::scope("")
+                    web::scope("/v1")
                         .wrap(timeout_middleware.clone())
                         .route("/healthcheck", web::get().to(healthcheck))
                         .route("/reply", web::post().to(reply)),
