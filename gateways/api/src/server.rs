@@ -38,6 +38,7 @@ pub struct Settings {
 pub struct AppSettings {
     pub host: String,
     pub port: u16,
+    pub request_timeout_sec: u64,
 }
 
 pub struct MetricSettings {
@@ -64,7 +65,8 @@ impl Server {
 
         let mut registry = settings.metrics.registry;
         let metrics_middleware = Metrics::new(&mut registry);
-        let timeout_middleware = Timeout::new(Duration::from_secs(1));
+        let timeout_middleware =
+            Timeout::new(Duration::from_secs(settings.app.request_timeout_sec));
 
         let state = AppState { registry };
         let state = web::Data::new(Mutex::new(state));

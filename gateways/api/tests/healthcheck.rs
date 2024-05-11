@@ -9,6 +9,7 @@ async fn healthcheck_works() {
         app: server::AppSettings {
             host: "127.0.0.1".to_string(),
             port: 0,
+            request_timeout_sec: 10,
         },
         metrics: server::MetricSettings {
             host: "127.0.0.1".to_string(),

@@ -27,6 +27,7 @@ async fn main() -> eyre::Result<()> {
         app: server::AppSettings {
             host: settings.app.host,
             port: settings.app.port,
+            request_timeout_sec: settings.app.request_timeout_sec,
         },
         metrics: server::MetricSettings {
             host: settings.metric.host,

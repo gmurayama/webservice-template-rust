@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use eyre::Context;
 use serde_aux::field_attributes::deserialize_number_from_string;
 
@@ -16,6 +18,8 @@ pub struct Application {
     pub port: u16,
     pub environment: Environment,
     pub service_name: String,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub request_timeout_sec: u64,
 }
 
 #[derive(serde::Deserialize, Clone)]
@@ -44,6 +48,7 @@ pub fn get_config() -> eyre::Result<Settings> {
         .set_default("app.port", 7000)?
         .set_default("app.environment", Environment::Development.as_str())?
         .set_default("app.service_name", "webservice-template")?
+        .set_default("app.request_timeout_sec", 2)?
         // Metric default settings
         .set_default("metric.host", "127.0.0.1")?
         .set_default("metric.port", 7001)?
