@@ -4,10 +4,9 @@ This project serves as a template for building web services in Rust using the ac
 
 ## Features
 
-- actix-web: utilizes Actix-web, a powerful and pragmatic framework for building web applications and web services in Rust.
-- OpenTelemetry Integration: includes OpenTelemetry support for distributed tracing and observability, allowing you to monitor and trace requests across your service.
-- Configurable: easily configurable with environment variables or configuration files to adapt to different deployment environments.
-- Logging: integrated logging setup for better debugging and monitoring.
+- [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-rust): emit traces in OTLP format to any OTel Collector.
+- [Prometheus](https://github.com/prometheus/client_rust): send metrics following the Open Metrics specification.
+- [config](https://github.com/mehcode/config-rs): configure settings using environment variables
 
 ## Getting Started
 
