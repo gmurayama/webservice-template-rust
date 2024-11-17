@@ -10,7 +10,7 @@ A huge portion of the codebase is dedicated to not only organizing code in cohes
 
 Hopefully this template can provide you with everything to launch an app as close to production-ready as possible by minimizing the initial overhead of creating a project (even though you may not require all the features and the additional complexity of the template).
 
-As for the decisions made, you most probably will disagree on some of them, and that's fine! It really shouldn't be difficult to change them to fit better your needs.
+As for the decisions made, you most probably will disagree on some of them, and that's fine! It really shouldn't be difficult to change them to fit better your needs (see [Architecture decisions](#architecture-decisions)).
 
 ## Overview
 
