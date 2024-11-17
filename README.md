@@ -40,8 +40,8 @@ webservice-template-rust/
 ## Getting Started
 
 1. Customize the project for your needs:
-  - Add new routes following the example on [routes/](gateways/api/src/routes/reply.rs)
-  - Configure environment variables or settings in [settings.rs](gateways/api/src/settings.rs) as per your requirements.
+    - Add new routes following the example on [routes/](gateways/api/src/routes/reply.rs)
+    - Configure environment variables or settings in [settings.rs](gateways/api/src/settings.rs) as per your requirements.
 
 2. Run the project:
 
