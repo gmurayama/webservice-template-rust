@@ -64,7 +64,7 @@ where
         Box::pin(async move {
             match tokio::time::timeout(duration, fut).await {
                 Ok(r) => r,
-                Err(_) => Err(actix_web::error::ErrorInternalServerError("timeout")),
+                Err(_) => Err(actix_web::error::ErrorRequestTimeout("timeout")),
             }
         })
     }
