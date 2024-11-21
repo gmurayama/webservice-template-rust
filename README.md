@@ -62,6 +62,7 @@ Access your web service at http://localhost:7000 (by default).
 - [Dockerfile](Dockerfile) leverages multi architecture build with a caching strategy to speed up build times, **however** they can make the build take even longer if the build host is always chaging (therefore, it never uses the cache layer) or you only deploy to x86-64 architectures. If that's the case, refer to this [simplified Dockerfile](https://github.com/gmurayama/webservice-template-rust/blob/7180e56dcec21e324991ce1cde83192b7cb32ef1/Dockerfile) that builds only to one target arch
   - The choice of using alpine is to avoid the trouble of downloading zig from the source. Since the Dockerfile is meant to work on either arm64 or amd64, relying on the package manager saves the trouble of choosing the file based on the build platform.
   - The Dockerfile was taken from this [article](https://medium.com/@vladkens/fast-multi-arch-docker-build-for-rust-projects-a7db42f3adde), but I found out the hard way that building for `musl` can be quite the challenge. It was not worth it, so I changed to `gnu` and used `debian:bullseye-slim` for the final image.
+- The routes returns `actix_web::Result<HttpResponse>` so the tracing middleware can emit an event better describing the error. It knows if an error occurred based on the `Result`, so just sending the HTTP Response is not enough.
 
 ## License
 
