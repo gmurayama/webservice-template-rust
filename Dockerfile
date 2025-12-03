@@ -1,8 +1,8 @@
-FROM --platform=$BUILDPLATFORM rust:1.84.0-bookworm AS chef
+FROM --platform=$BUILDPLATFORM rust:1.91.1-bookworm AS chef
 WORKDIR /app
 RUN apt update
 RUN apt install build-essential gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross -y
-RUN cargo install --locked cargo-chef@0.1.70
+RUN cargo install --locked cargo-chef@0.1.73
 RUN rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
 
 FROM chef AS planner
