@@ -1,29 +1,32 @@
-FROM --platform=$BUILDPLATFORM rust:1.82.0-alpine AS chef
+FROM --platform=$BUILDPLATFORM rust:1.84.0-bookworm AS chef
 WORKDIR /app
-ENV PKGCONFIG_SYSROOTDIR=/
-RUN apk update
-RUN apk add --no-cache alpine-sdk openssl-dev zig
-RUN cargo install --locked cargo-zigbuild cargo-chef
+RUN apt update
+RUN apt install build-essential gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross -y
+RUN cargo install --locked cargo-chef@0.1.70
 RUN rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
- 
+
 FROM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
  
 FROM chef AS builder
+ARG TARGETPLATFORM
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+
 COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --recipe-path recipe.json --release --zigbuild \
-  --target x86_64-unknown-linux-gnu --target aarch64-unknown-linux-gnu
- 
+COPY --from=planner /app/platform.sh platform.sh
+RUN cargo chef cook \
+  --release \
+  --recipe-path recipe.json \
+  --target $(sh platform.sh)
 COPY . .
-RUN cargo zigbuild -r \
-    --target x86_64-unknown-linux-gnu --target aarch64-unknown-linux-gnu \
+RUN cargo build -r \
+		--target $(sh platform.sh) \
     --bin api
 RUN mkdir /app/linux && \
-  cp target/aarch64-unknown-linux-gnu/release/api /app/linux/arm64 && \
-  cp target/x86_64-unknown-linux-gnu/release/api /app/linux/amd64
+  cp target/$(sh platform.sh)/release/api /app/${TARGETPLATFORM}
  
-FROM debian:bullseye-slim AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 ARG TARGETPLATFORM
 COPY --from=builder /app/${TARGETPLATFORM} /app/prog

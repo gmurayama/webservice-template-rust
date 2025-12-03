@@ -84,14 +84,12 @@ impl Server {
                 )
         })
         .listen(listener)
-        .map(|s| {
+        .inspect(|_| {
             log::info!(
                 "Started listening on {}:{}",
                 settings.app.host,
                 settings.app.port
             );
-
-            s
         })?
         .run();
 
@@ -101,14 +99,12 @@ impl Server {
                 .route("/metrics", web::get().to(metrics_handler))
         })
         .listen(metrics_listener)
-        .map(|s| {
+        .inspect(|_| {
             log::info!(
                 "Metrics Server listening on {}:{}",
                 settings.metrics.host,
                 settings.metrics.port
             );
-
-            s
         })?
         .run();
 
@@ -129,10 +125,7 @@ impl Server {
         let result = futures_util::join!(self.metrics_server, self.server);
 
         match result {
-            (Err(e1), Err(e2)) => Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("{}\n{}", e1, e2),
-            )),
+            (Err(e1), Err(e2)) => Err(std::io::Error::other(format!("{}\n{}", e1, e2))),
             (Ok(_), Err(err)) | (Err(err), Ok(_)) => Err(err),
             _ => Ok(()),
         }
