@@ -21,8 +21,8 @@ RUN cargo chef cook \
   --target $(sh platform.sh)
 COPY . .
 RUN cargo build -r \
-		--target $(sh platform.sh) \
-    --bin api
+  --target $(sh platform.sh) \
+  --bin api
 RUN mkdir /app/linux && \
   cp target/$(sh platform.sh)/release/api /app/${TARGETPLATFORM}
  

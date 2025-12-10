@@ -10,3 +10,6 @@ thiserror = { version = "1.0" }
 
 eyre = { workspace = true }
 tracing = { workspace = true }
+
+[lints]
+workspace = true

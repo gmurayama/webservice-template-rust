@@ -19,3 +19,5 @@ log = { workspace = true }
 tokio = { workspace = true, features = ["sync"] }
 eyre = { workspace = true }
 
+[lints]
+workspace = true
