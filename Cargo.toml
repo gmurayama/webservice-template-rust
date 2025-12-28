@@ -1,6 +1,7 @@
 [workspace]
 members = ["gateways/api", "infrastructure", "application"]
 default-members = ["gateways/api"]
+resolver = "2"
 
 [workspace.package]
 authors = ["Gustavo Murayama <gmurayama@outlook.com>"]
@@ -9,7 +10,7 @@ version = "0.1.0"
 [workspace.dependencies]
 tracing = { version = "0.1" }
 log = "0.4"
-tokio = { version = "1.21" }
+tokio = { version = "1.48" }
 eyre = { version = "0.6" }
 prometheus-client = { version = "0.22" }
 

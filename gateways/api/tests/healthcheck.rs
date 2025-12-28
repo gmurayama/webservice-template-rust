@@ -26,7 +26,7 @@ async fn healthcheck_works() {
     // Act
     let response = client
         // Use the returned application address
-        .get(&format!("http://localhost:{}/healthcheck", &port))
+        .get(format!("http://localhost:{}/healthcheck", port))
         .send()
         .await
         .expect("Failed to execute request.");

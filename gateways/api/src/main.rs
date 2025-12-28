@@ -9,7 +9,7 @@ use settings::get_config;
 async fn main() -> eyre::Result<()> {
     let settings = get_config()?;
 
-    telemetry::setup(telemetry::Settings {
+    let _guard = telemetry::setup(telemetry::Settings {
         log: telemetry::LoggingSettings {
             format: telemetry::LoggingOptions::PrettyPrint,
         },
@@ -37,8 +37,6 @@ async fn main() -> eyre::Result<()> {
     })?;
 
     server.run().await?;
-
-    telemetry::teardown().await;
 
     Ok(())
 }

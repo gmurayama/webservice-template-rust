@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   prometheus:
     image: prom/prometheus:v2.43.1
@@ -7,10 +5,10 @@ services:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
     network_mode: "host"
-    extra_hosts: 
+    extra_hosts:
       - host.docker.internal:host-gateway
 
   grafana:
@@ -21,9 +19,9 @@ services:
       - grafana_data:/var/lib/grafana
     ports:
       - 8000:3000
-    extra_hosts: 
+    extra_hosts:
       - host.docker.internal:host-gateway
-    
+
   jaeger:
     image: jaegertracing/all-in-one:1.54
     environment:

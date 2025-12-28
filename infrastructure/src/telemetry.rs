@@ -1,9 +1,6 @@
-use std::time::Duration;
-
-use opentelemetry::{global, KeyValue};
-use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::{propagation::TraceContextPropagator, trace::Sampler, Resource};
-use tokio::task;
+use opentelemetry::{global, trace::TracerProvider};
+use opentelemetry_otlp::SpanExporter;
+use opentelemetry_sdk::{propagation::TraceContextPropagator, trace::SdkTracerProvider, Resource};
 use tracing::subscriber::set_global_default;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_log::LogTracer;
@@ -34,7 +31,19 @@ pub struct Settings {
     pub service_name: String,
 }
 
-pub fn setup(settings: Settings) {
+pub struct TelemetryGuard {
+    tracer_provider: SdkTracerProvider,
+}
+
+impl Drop for TelemetryGuard {
+    fn drop(&mut self) {
+        if let Err(err) = self.tracer_provider.shutdown() {
+            log::error!("failed to shutdown tracer provider: {err}");
+        }
+    }
+}
+
+pub fn setup(settings: Settings) -> TelemetryGuard {
     LogTracer::init().expect("Failed to set logger");
     let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
 
@@ -50,49 +59,34 @@ pub fn setup(settings: Settings) {
         .with_filter(filter_fn(move |_| emit_pretty_formating));
 
     global::set_text_map_propagator(TraceContextPropagator::new());
-    let tracer = opentelemetry_otlp::new_pipeline()
-        .tracing()
-        .with_exporter(
-            opentelemetry_otlp::new_exporter()
-                .tonic()
-                .with_endpoint(format!(
-                    "http://{}:{}",
-                    settings.telemetry.host, settings.telemetry.port
-                ))
-                .with_timeout(Duration::from_secs(2)),
-        )
-        .with_trace_config(
-            opentelemetry_sdk::trace::config()
-                .with_sampler(Sampler::TraceIdRatioBased(settings.telemetry.sampler_param))
-                .with_resource(Resource::new(vec![KeyValue::new(
-                    "service.name",
-                    settings.service_name.clone(),
-                )])),
-        )
-        .install_batch(opentelemetry_sdk::runtime::Tokio)
-        .unwrap();
 
+    let exporter = SpanExporter::builder()
+        .with_tonic()
+        .build()
+        .expect("Failed to create span exporter");
+    let provider = SdkTracerProvider::builder()
+        .with_resource(
+            Resource::builder()
+                .with_service_name(settings.service_name)
+                .build(),
+        )
+        .with_batch_exporter(exporter)
+        .build();
+    let tracer = provider.tracer("app");
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
+
+    global::set_tracer_provider(provider.clone());
 
     let subscriber = Registry::default()
         .with(env_filter)
+        .with(telemetry)
         .with(bunyan_json_layer)
         .with(bunyan_formatting_layer)
-        .with(pretty_formatting_layer)
-        .with(telemetry);
+        .with(pretty_formatting_layer);
 
     set_global_default(subscriber).expect("Failed to set subscriber");
-}
 
-pub async fn teardown() {
-    let res = task::spawn_blocking(move || {
-        global::shutdown_tracer_provider();
-    });
-
-    if tokio::time::timeout(Duration::from_secs(5), res)
-        .await
-        .is_err()
-    {
-        log::error!("could not shutdown tracer provider in 5 sec");
+    TelemetryGuard {
+        tracer_provider: provider,
     }
 }
