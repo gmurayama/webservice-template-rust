@@ -13,7 +13,7 @@ RUN rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
 FROM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
- 
+
 FROM chef AS builder
 ARG TARGETPLATFORM
 ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
@@ -31,7 +31,7 @@ RUN cargo build -r \
   --bin api
 RUN mkdir /app/linux && \
   cp target/$(sh platform.sh)/release/api /app/${TARGETPLATFORM}
- 
+
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 ARG TARGETPLATFORM
