@@ -32,11 +32,13 @@ webservice-template-rust/
 
 ## Getting Started
 
-1. Customize the project for your needs:
+1. Run [cargo-generate](https://github.com/cargo-generate/cargo-generate) or just replace `{{project-name}}` and `{{authors}}` tags on the project
+
+2. Customize the project for your needs:
     - Add new routes following the example on [routes/](gateways/api/src/routes/reply.rs)
     - Configure environment variables or settings in [settings.rs](gateways/api/src/settings.rs)
 
-2. Run the project:
+3. Run the project:
 
 ```bash
 $ docker-compose up -d
