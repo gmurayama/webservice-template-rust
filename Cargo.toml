@@ -1,14 +1,13 @@
-[package]
-name = "{{project-name}}"
-
 [workspace]
 members = ["gateways/api", "infrastructure", "application"]
 default-members = ["gateways/api"]
 resolver = "2"
 
 [workspace.package]
+name = "{{project-name}}"
 authors = ["{{authors}}"]
 version = "0.1.0"
+edition = "2021"
 
 [workspace.dependencies]
 tracing = { version = "0.1" }
